@@ -44,14 +44,18 @@ func main() {
     } else {
         absPath = os.Getenv("CATCH_DIRECTORY")
     }
-    db := setupDatabase()
+    db := setupDatabase("palimpest")
     defer db.Close()
+    openDataAndIngest(db, absPath)
+}
+
+func openDataAndIngest(db *gorm.DB, absPath string){
     notes := openAndProcessData(absPath)
     ingestData(notes, db)
 }
 
-func setupDatabase() *gorm.DB {
-    db, err := gorm.Open("postgres", "host=localhost user=postgres dbname=palimpest sslmode=disable password=postgres")
+func setupDatabase(databaseName string) *gorm.DB {
+    db, err := gorm.Open("postgres", "host=localhost user=postgres dbname=" + databaseName + " sslmode=disable password=postgres")
     if err != nil {
         db.Close()
         panic(err)
@@ -99,7 +103,6 @@ func openAndProcessData(absPath string) []Note {
         if directory.IsDir() == true {
             file, err := os.Open(absPath + "/" + directory.Name() + "/note.html")
             if err != nil {
-                file.Close()
                 panic(err)
             }
             note, err := parseHTML(file)
@@ -203,9 +206,11 @@ func parseHTMLTextToken(
 func parseTags(tagContent string) []Tag {
     var tagList []Tag
     for _, unparsedTag := range strings.Split(tagContent, "#")[1:] {
-        parsedTag := strings.ToLower(strings.Split(unparsedTag, " ")[0])
-        tagObject := Tag{Name: parsedTag}
-        tagList = append(tagList, tagObject)
+        parsedTag := strings.ToLower(strings.Split(strings.Split(unparsedTag, "\n")[0], " ")[0])
+        if parsedTag != ""{
+            tagObject := Tag{Name: parsedTag}
+            tagList = append(tagList, tagObject)
+        }
     }
     return tagList
 }
@@ -274,4 +279,10 @@ func addNote(
             *tagNames = append(*tagNames, tag.Name)
         }
     }
+}
+
+func queryData(db *gorm.DB) []Note {
+    var notes []Note
+    db.Preload("Tags").Find(&notes)
+    return notes
 }
