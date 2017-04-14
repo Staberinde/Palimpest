@@ -187,17 +187,17 @@ func parseHTMLTextToken(
     token := tokeniser.Token()
     text := html.UnescapeString(token.String())
     if *dateTokenNext {
-        (*note).OriginalCreationTimestamp = parseDateToken(text, dateTokenNext, dateScriptTokenNext)
-    } else if *possibleExtIDTokenNext && text == "Date: " && (*note).OriginalCreationTimestamp.IsZero() {
+        note.OriginalCreationTimestamp = parseDateToken(text, dateTokenNext, dateScriptTokenNext)
+    } else if *possibleExtIDTokenNext && text == "Date: " && note.OriginalCreationTimestamp.IsZero() {
         *dateScriptTokenNext = true
         *possibleExtIDTokenNext = false
     } else if *contentTokenNext {
-        (*note).Content = text
-        (*note).Tags = parseTags(text)
+        note.Content = text
+        note.Tags = parseTags(text)
         *contentTokenNext = false
     } else if *possibleExtIDTokenNext {
         if strings.Contains(text, "Note Id: ") {
-            (*note).ExternalID = strings.TrimPrefix(text, "Note Id: ")
+            note.ExternalID = strings.TrimPrefix(text, "Note Id: ")
         }
         *possibleExtIDTokenNext = false
     }
@@ -207,7 +207,7 @@ func parseTags(tagContent string) []Tag {
     var tagList []Tag
     for _, unparsedTag := range strings.Split(tagContent, "#")[1:] {
         parsedTag := strings.ToLower(strings.Split(strings.Split(unparsedTag, "\n")[0], " ")[0])
-        if parsedTag != ""{
+        if parsedTag != "" {
             tagObject := Tag{Name: parsedTag}
             tagList = append(tagList, tagObject)
         }
