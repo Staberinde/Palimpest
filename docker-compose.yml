@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  keep:
+    image: keep:latest
+    build: ./Keep
+    container_name: keep
+    volumes:
+      - ./Keep:/Keep
+    environment:
+      FLASK_APP: 'keep:app'
+      GOOGLE_EMAIL: ${GOOGLE_EMAIL}
+      GOOGLE_PASSWORD: ${GOOGLE_PASSWORD}
+      LANG: 'C.UTF-8'
+      LC_ALL: 'C.UTF-8'
+    ports:
+      - "5000:5000"
+    command: 'flask run --host=0.0.0.0'

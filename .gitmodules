@@ -1,0 +1,6 @@
+[submodule "google-keep-api-python-client/gkeepapi"]
+	path = google-keep-api-python-client/gkeepapi
+	url = git@github.com:kiwiz/gkeepapi.git
+[submodule "gkeepapi"]
+	path = gkeepapi
+	url = git@github.com:kiwiz/gkeepapi.git
