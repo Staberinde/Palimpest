@@ -13,19 +13,23 @@ import (
     _ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-type Note struct {
+type BaseModel struct {
     gorm.Model
+}
+
+type Note struct {
     ExternalID string `gorm:"unique"`
     Content    string `gorm:"not null"`
     Source     string `gorm:"not null"`
     Tags       []Tag `gorm:"many2many:note_tag_mapping;AssociationForeignKey:ID;ForeignKey:ID;"`
+    BaseModel
     OriginalCreationTimestamp time.Time
 }
 
 type Tag struct {
-    gorm.Model
     Name    string `gorm:"not null;unique"`
     Notes   []Note `gorm:"many2many:note_tag_mapping;not null;AssociationForeignKey:ID;ForeignKey:ID;"`
+    BaseModel
 }
 
 func contains(s []string, e string) bool {

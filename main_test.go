@@ -7,18 +7,23 @@ import (
     "github.com/cloudfoundry/jibber_jabber"
 )
 
-func zeroGormDatesAndID(results []Note) []Note {
-    for resultID := range results {
-        results[resultID].ID = 0
-        results[resultID].CreatedAt = time.Time{}
-        results[resultID].UpdatedAt = time.Time{}
-        for TagID := range results[resultID].Tags {
-            results[resultID].Tags[TagID].ID = 0
-            results[resultID].Tags[TagID].CreatedAt = time.Time{}
-            results[resultID].Tags[TagID].UpdatedAt = time.Time{}
-        }
+func (result *BaseModel) zeroBaseModelDatesAndID() {
+    result.ID = 0
+    result.CreatedAt = time.Time{}
+    result.UpdatedAt = time.Time{}
+}
+
+func zeroNotesDatesAndID(results []Note) {
+    for _, result := range results {
+        result.zeroNoteDatesAndID()
     }
-    return results
+}
+
+func (result *Note) zeroNoteDatesAndID(){
+    result.zeroBaseModelDatesAndID()
+    for _, Tag := range result.Tags {
+        Tag.zeroBaseModelDatesAndID()
+    }
 }
 
 func getSystemLocalLoc() *time.Location {
@@ -78,11 +83,12 @@ twitter: http://twitter.com/catch
             },
         },
     }
+    zeroNotesDatesAndID(expectedResults)
     db := setupDatabase("palimpest_test")
     db.Exec("truncate notes CASCADE; truncate tags CASCADE; truncate note_tag_mapping CASCADE;")
     defer db.Close()
     openDataAndIngest(db, "./TestFixtures")
     results := queryData(db)
-    results = zeroGormDatesAndID(results)
+    zeroNotesDatesAndID(results)
     assert.Equal(t, expectedResults, results)
 }
