@@ -3,6 +3,7 @@ package main
 import (
     "errors"
     "io/ioutil"
+    "github.com/golang/glog"
     "io"
     "os"
     "strings"
@@ -42,15 +43,22 @@ func contains(s []string, e string) bool {
 }
 
 func main() {
+    glog.Info("Starting Palimpest!")
     var absPath string
     if len(os.Args) > 1 {
         absPath = os.Args[1]
     } else {
         absPath = os.Getenv("CATCH_DIRECTORY")
     }
-    db := setupDatabase("palimpest")
+    db := setupDatabase(
+        os.Getenv("DATABASE_NAME"),
+        os.Getenv("DATABASE_HOST"),
+        os.Getenv("DATABASE_USER"),
+        os.Getenv("DATABASE_PASSWORD"),
+    )
     defer db.Close()
     openDataAndIngest(db, absPath)
+    glog.Info("Expected termination of Palimpest!")
 }
 
 func openDataAndIngest(db *gorm.DB, absPath string){
@@ -58,8 +66,28 @@ func openDataAndIngest(db *gorm.DB, absPath string){
     ingestData(notes, db)
 }
 
-func setupDatabase(databaseName string) *gorm.DB {
-    db, err := gorm.Open("postgres", "host=localhost user=postgres dbname=" + databaseName + " sslmode=disable password=postgres")
+func setupDatabase(
+    databaseName string,
+    databaseHost string,
+    databaseUser string,
+    databasePassword string,
+) *gorm.DB {
+    glog.Info(
+        "Instantiating database with:" +
+        "dbname=" + databaseName +
+        " host=" + databaseHost  +
+        " user=" + databaseUser +
+        " sslmode=disable " +
+        " password=" + databasePassword,
+    )
+    db, err := gorm.Open(
+        "postgres",
+        "host=" + databaseHost  +
+        " user=" + databaseUser +
+        " dbname=" + databaseName +
+        " sslmode=disable " +
+        " password=" + databasePassword,
+    )
     if err != nil {
         db.Close()
         panic(err)

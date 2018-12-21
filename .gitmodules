@@ -4,3 +4,6 @@
 [submodule "gkeepapi"]
 	path = gkeepapi
 	url = git@github.com:kiwiz/gkeepapi.git
+[submodule "wait-for-it"]
+	path = wait-for-it
+	url = git@github.com:vishnubob/wait-for-it.git

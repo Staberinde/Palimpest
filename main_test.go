@@ -1,6 +1,7 @@
 package main
 
 import (
+    "os"
     "time"
     "testing"
     "github.com/stretchr/testify/assert"
@@ -9,20 +10,21 @@ import (
 
 func (result *BaseModel) zeroBaseModelDatesAndID() {
     result.ID = 0
-    result.CreatedAt = time.Time{}
-    result.UpdatedAt = time.Time{}
+    result.CreatedAt = time.Unix(int64(0), int64(0))
+    result.UpdatedAt = time.Unix(int64(0), int64(0))
 }
 
-func zeroNotesDatesAndID(results []Note) {
-    for _, result := range results {
-        result.zeroNoteDatesAndID()
+func zeroNotesDatesAndID(results []Note) []Note {
+    for i, _ := range results {
+        results[i].zeroNoteDatesAndID()
     }
+    return results
 }
 
-func (result *Note) zeroNoteDatesAndID(){
+func (result *Note) zeroNoteDatesAndID() {
     result.zeroBaseModelDatesAndID()
-    for _, Tag := range result.Tags {
-        Tag.zeroBaseModelDatesAndID()
+    for i, _ := range result.Tags {
+        result.Tags[i].zeroBaseModelDatesAndID()
     }
 }
 
@@ -83,12 +85,15 @@ twitter: http://twitter.com/catch
             },
         },
     }
-    zeroNotesDatesAndID(expectedResults)
-    db := setupDatabase("palimpest_test")
+    db := setupDatabase(
+        "palimpest_test",
+        os.Getenv("DATABASE_HOST"),
+        os.Getenv("DATABASE_USER"),
+        os.Getenv("DATABASE_PASSWORD"),
+    )
     db.Exec("truncate notes CASCADE; truncate tags CASCADE; truncate note_tag_mapping CASCADE;")
     defer db.Close()
-    openDataAndIngest(db, "./TestFixtures")
+    openDataAndIngest(db, os.Getenv("TEST_FIXTURES_DIR"))
     results := queryData(db)
-    zeroNotesDatesAndID(results)
-    assert.Equal(t, expectedResults, results)
+    assert.Equal(t, zeroNotesDatesAndID(expectedResults), zeroNotesDatesAndID(results))
 }

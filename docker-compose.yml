@@ -1,3 +1,4 @@
+---
 version: '3'
 
 services:
@@ -7,12 +8,49 @@ services:
     container_name: keep
     volumes:
       - ./Keep:/Keep
+    networks:
+      - palimpest
     environment:
       FLASK_APP: 'keep:app'
       GOOGLE_EMAIL: ${GOOGLE_EMAIL}
       GOOGLE_PASSWORD: ${GOOGLE_PASSWORD}
       LANG: 'C.UTF-8'
       LC_ALL: 'C.UTF-8'
+      FLASK_DEBUG: ${FLASK_DEBUG}
     ports:
       - "5000:5000"
     command: 'flask run --host=0.0.0.0'
+  palimpest:
+    image: palimpest:latest
+    build: ./
+    container_name: palimpest
+    links:
+      - palimpestdb
+    networks:
+      - palimpest
+    volumes:
+      - './:/Palimpest'
+      - '${CATCH_DIRECTORY}:${CATCH_DIRECTORY}'
+    command: '/Palimpest/docker-entrypoint.sh'
+    environment:
+      CATCH_DIRECTORY: ${CATCH_DIRECTORY}
+      DATABASE_HOST: ${PALIMPEST_POSTGRES_HOST}
+      DATABASE_NAME: ${PALIMPEST_POSTGRES_DB}
+      DATABASE_USER: ${PALIMPEST_POSTGRES_USER}
+      DATABASE_PASSWORD: ${PALIMPEST_POSTGRES_PASSWORD}
+      LANG: 'C.UTF-8'
+      LC_ALL: 'C.UTF-8'
+      TEST_FIXTURES_DIR: ${TEST_FIXTURES_DIR}
+  palimpestdb:
+    image: postgres:11.1
+    hostname: ${PALIMPEST_POSTGRES_HOST}
+    container_name: ${PALIMPEST_POSTGRES_HOST}
+    networks:
+      - palimpest
+    environment:
+      POSTGRES_DB: ${PALIMPEST_POSTGRES_DB}
+      POSTGRES_USER: ${PALIMPEST_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PALIMPEST_POSTGRES_PASSWORD}
+
+networks:
+  palimpest:
