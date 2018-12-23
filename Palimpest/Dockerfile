@@ -1,6 +1,7 @@
 FROM golang:1.10.5-alpine
 
 WORKDIR /Go/src/Palimpest
+#ENV GOPATH=/Palimpest/vendor
 ENV GOPATH=/Go
 
 COPY main.go ./main.go
@@ -20,3 +21,4 @@ RUN /Go/bin/dep ensure
 RUN go get -d -v ./...
 
 RUN go install -v ./...
+#ENV GOPATH=/Go/src/Palimpest

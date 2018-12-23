@@ -2,16 +2,16 @@ package main
 
 import (
     "errors"
-    "io/ioutil"
     "github.com/golang/glog"
-    "io"
-    "os"
-    "strings"
-    "strconv"
-    "time"
-    "golang.org/x/net/html"
     "github.com/jinzhu/gorm"
     _ "github.com/jinzhu/gorm/dialects/postgres"
+    "golang.org/x/net/html"
+    "io"
+    "io/ioutil"
+    "os"
+    "strconv"
+    "strings"
+    "time"
 )
 
 type BaseModel struct {
@@ -19,18 +19,18 @@ type BaseModel struct {
 }
 
 type Note struct {
-    ExternalID string `gorm:"unique"`
-    Content    string `gorm:"not null"`
-    Source     string `gorm:"not null"`
-    Tags       []Tag `gorm:"many2many:note_tag_mapping;AssociationForeignKey:ID;ForeignKey:ID;"`
     BaseModel
+    ExternalID                string `gorm:"unique"`
+    Content                   string `gorm:"not null"`
+    Source                    string `gorm:"not null"`
+    Tags                      []Tag  `gorm:"many2many:note_tag_mapping;AssociationForeignKey:ID;ForeignKey:ID;"`
     OriginalCreationTimestamp time.Time
 }
 
 type Tag struct {
-    Name    string `gorm:"not null;unique"`
-    Notes   []Note `gorm:"many2many:note_tag_mapping;not null;AssociationForeignKey:ID;ForeignKey:ID;"`
     BaseModel
+    Name  string `gorm:"not null;unique"`
+    Notes []Note `gorm:"many2many:note_tag_mapping;not null;AssociationForeignKey:ID;ForeignKey:ID;"`
 }
 
 func contains(s []string, e string) bool {
@@ -61,7 +61,7 @@ func main() {
     glog.Info("Expected termination of Palimpest!")
 }
 
-func openDataAndIngest(db *gorm.DB, absPath string){
+func openDataAndIngest(db *gorm.DB, absPath string) {
     notes := openAndProcessData(absPath)
     ingestData(notes, db)
 }
@@ -161,11 +161,28 @@ func parseHTML(content io.Reader) (Note, error) {
             if note.ExternalID != "" && !note.OriginalCreationTimestamp.IsZero() {
                 return note, errors.New("No content")
             }
-            panic("Reached end of document without date or externalID Timestamp: " + note.OriginalCreationTimestamp.String() + " External Id :" + note.ExternalID + " Content: " + note.Content)
+            panic(
+                "Reached end of document without date or externalID" +
+                "Timestamp: {{.note.OriginalCreationTimestamp.String()}}" +
+                "External Id: {{.note.ExternalID}}" +
+                "Content: {{.note.Content}}")
         case tt == html.StartTagToken:
-            parseStartTagToken(tokeniser, &dateTokenNext, &possibleExtIDTokenNext, &dateScriptTokenNext, &contentTokenNext)
+            parseStartTagToken(
+                tokeniser,
+                &dateTokenNext,
+                &possibleExtIDTokenNext,
+                &dateScriptTokenNext,
+                &contentTokenNext,
+            )
         case tt == html.TextToken:
-            parseHTMLTextToken(tokeniser, &note, &dateTokenNext, &possibleExtIDTokenNext, &dateScriptTokenNext, &contentTokenNext)
+            parseHTMLTextToken(
+                tokeniser,
+                &note,
+                &dateTokenNext,
+                &possibleExtIDTokenNext,
+                &dateScriptTokenNext,
+                &contentTokenNext,
+            )
         }
     }
     return note, nil
@@ -238,7 +255,11 @@ func parseHTMLTextToken(
 func parseTags(tagContent string) []Tag {
     var tagList []Tag
     for _, unparsedTag := range strings.Split(tagContent, "#")[1:] {
-        parsedTag := strings.ToLower(strings.Split(strings.Split(unparsedTag, "\n")[0], " ")[0])
+        parsedTag := strings.ToLower(
+            strings.Split(
+                strings.Split(unparsedTag, "\n")[0],
+                " ",
+            )[0])
         if parsedTag != "" {
             tagObject := Tag{Name: parsedTag}
             tagList = append(tagList, tagObject)

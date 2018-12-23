@@ -22,14 +22,14 @@ services:
     command: 'flask run --host=0.0.0.0'
   palimpest:
     image: palimpest:latest
-    build: ./
+    build: ./Palimpest
     container_name: palimpest
     links:
       - palimpestdb
     networks:
       - palimpest
     volumes:
-      - './:/Palimpest'
+      - './Palimpest:/Palimpest'
       - '${CATCH_DIRECTORY}:${CATCH_DIRECTORY}'
     command: '/Palimpest/docker-entrypoint.sh'
     environment:
