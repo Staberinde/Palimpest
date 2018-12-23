@@ -2,10 +2,11 @@ package main
 
 import (
     "os"
-    "time"
     "testing"
-    "github.com/stretchr/testify/assert"
+    "time"
+
     "github.com/cloudfoundry/jibber_jabber"
+    "github.com/stretchr/testify/assert"
 )
 
 func (result *BaseModel) zeroBaseModelDatesAndID() {
@@ -48,7 +49,6 @@ func getSystemLocalLoc() *time.Location {
     return localLoc
 }
 
-
 func TestEndToEnd(t *testing.T) {
     expectedResults := []Note{
         Note{
@@ -66,20 +66,20 @@ email: feedback@catch.com
 twitter: http://twitter.com/catch
 #Welcome #Catch
 `,
-            Source: "Catch",
-            ExternalID: "000000000000000022214014",
+            Source:                    "Catch",
+            ExternalID:                "000000000000000022214014",
             OriginalCreationTimestamp: time.Unix(1295218624, 0).In(getSystemLocalLoc()),
             Tags: []Tag{
                 Tag{
-                    Name: "example",
+                    Name:  "example",
                     Notes: nil,
                 },
                 Tag{
-                    Name: "welcome",
+                    Name:  "welcome",
                     Notes: nil,
                 },
                 Tag{
-                    Name: "catch",
+                    Name:  "catch",
                     Notes: nil,
                 },
             },

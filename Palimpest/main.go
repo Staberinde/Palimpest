@@ -2,16 +2,17 @@ package main
 
 import (
     "errors"
-    "github.com/golang/glog"
-    "github.com/jinzhu/gorm"
-    _ "github.com/jinzhu/gorm/dialects/postgres"
-    "golang.org/x/net/html"
     "io"
     "io/ioutil"
     "os"
     "strconv"
     "strings"
     "time"
+
+    "github.com/golang/glog"
+    "github.com/jinzhu/gorm"
+    _ "github.com/jinzhu/gorm/dialects/postgres"
+    "golang.org/x/net/html"
 )
 
 type BaseModel struct {
@@ -72,21 +73,18 @@ func setupDatabase(
     databaseUser string,
     databasePassword string,
 ) *gorm.DB {
-    glog.Info(
-        "Instantiating database with:" +
+    gormDatabaseParams := (
         "dbname=" + databaseName +
-        " host=" + databaseHost  +
+        " host=" + databaseHost +
         " user=" + databaseUser +
         " sslmode=disable " +
-        " password=" + databasePassword,
+        " password=" + databasePassword)
+    glog.Info(
+        "Instantiating database with: " + gormDatabaseParams,
     )
     db, err := gorm.Open(
         "postgres",
-        "host=" + databaseHost  +
-        " user=" + databaseUser +
-        " dbname=" + databaseName +
-        " sslmode=disable " +
-        " password=" + databasePassword,
+        gormDatabaseParams,
     )
     if err != nil {
         db.Close()
